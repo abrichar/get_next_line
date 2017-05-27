@@ -6,15 +6,15 @@
 /*   By: abrichar <abrichar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/27 16:53:47 by abrichar          #+#    #+#             */
-/*   Updated: 2017/05/27 16:53:58 by abrichar         ###   ########.fr       */
+/*   Updated: 2017/05/27 16:59:47 by abrichar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-static int end_of_line(char *buff)
+static int		end_of_line(char *buff)
 {
-	int count;
+	int		count;
 
 	count = 0;
 	while (buff[count] != '\n' && buff[count])
@@ -28,11 +28,11 @@ static int end_of_line(char *buff)
 		return (-1);
 }
 
-static char* join(char *buff, char *tab)
+static char		*join(char *buff, char *tab)
 {
-	size_t i;
-	size_t j;
-	char   *ptr;
+	size_t	i;
+	size_t	j;
+	char	*ptr;
 
 	i = 0;
 	j = 0;
@@ -49,10 +49,10 @@ static char* join(char *buff, char *tab)
 	return (ptr);
 }
 
-static int verif(char **buff, char **tab, char **line)
+static int		verif(char **buff, char **tab, char **line)
 {
-	char *ptr;
-	int final;
+	char	*ptr;
+	int		final;
 
 	*buff = join(*buff, *tab);
 	final = end_of_line(*buff);
@@ -67,12 +67,12 @@ static int verif(char **buff, char **tab, char **line)
 	return (0);
 }
 
-int get_next_line(int const fd, char **line)
+int				get_next_line(int const fd, char **line)
 {
-	static char *buff[256];
-	char *tmp;
-	int result;
-	int ret;
+	static char		*buff[256];
+	char			*tmp;
+	int				result;
+	int				ret;
 
 	tmp = ft_strnew(BUFF_SIZE);
 	if (BUFF_SIZE <= 0 || fd < 0 || (ret = read(fd, tmp, 0)) < 0)
