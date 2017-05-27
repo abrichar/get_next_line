@@ -5,82 +5,93 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: abrichar <abrichar@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2016/12/07 19:49:51 by abrichar          #+#    #+#             */
-/*   Updated: 2017/05/17 18:01:56 by abrichar         ###   ########.fr       */
+/*   Created: 2017/05/27 16:53:47 by abrichar          #+#    #+#             */
+/*   Updated: 2017/05/27 16:53:58 by abrichar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-//affiche actuellement la premiere ligne
-//tout faire dans la meme fonction puis séparer après
-//Pouvoir sauvergarder l'endroit où on est pour pouvoir changer au besoin
-//Mettre dans un lne-> quand il y a un \n ?
-static t_line	*init_list(t_line *line, int fd)
+static int end_of_line(char *buff)
 {
-	t_line	*begin;
-	t_line	*before;
+	int count;
 
-	begin = line;
-	before = NULL;
-	while (line && line->fd != fd)
+	count = 0;
+	while (buff[count] != '\n' && buff[count])
+		count++;
+	if (buff[count] == '\n')
 	{
-		before = line;
-		line = line->next;
+		buff[count] = '\0';
+		return (count);
 	}
-	if (!line)
-	{
-		line = ft_memalloc(sizeof(t_line));
-		if (!line)
-			return (0);
-		line->fd = fd;
-	}
-	return (begin);
-	}
-
-int			get_next_line(const int fd, char **line)
-{
-	static t_line *lne;
-	t_line *actual;
- 	int		ret;
-	int		index;
-	char	buff[BUFF_SIZE + 1];
-
-	if (!fd)
+	else
 		return (-1);
-	lne = init_list(lne, fd);
-	actual = lne;
-	if (actual == lne)
-		while ((ret = read(fd, buff, BUFF_SIZE)))
-		{
-			index = 0;
-			while (buff[index])
-			{
-				while (buff[index] != '\n' && (buff[index]) && index < BUFF_SIZE)
-			  				index++;
-				buff[index] = '\0';
-				actual->content = ft_strdup(buff);
-				actual = actual->next;
-				index++;
-			}
-			*line = ft_strdup(lne->content);
-			lne = lne->next;
-		}
-	if ((ret = read(fd, *line, BUFF_SIZE)) == 0)
-		return (0);
-	return (1);
 }
 
-int		main(void)
+static char* join(char *buff, char *tab)
 {
-	int			fd;
-	char		*line;
+	size_t i;
+	size_t j;
+	char   *ptr;
 
-	line = 0;
-	fd = open("test", O_RDONLY);
-	get_next_line(fd, &line);
-	ft_putendl(line);
-	get_next_line(fd, &line);
-	close(fd);
+	i = 0;
+	j = 0;
+	if (buff)
+		i = ft_strlen(buff);
+	if (tab)
+		j = ft_strlen(tab);
+	ptr = (char *)malloc(sizeof(*ptr) * (i + j + 1));
+	ft_memcpy(ptr, buff, i);
+	ft_memcpy(ptr + i, tab, j);
+	ptr[i + j] = '\0';
+	free(buff);
+	ft_bzero(tab, BUFF_SIZE + 1);
+	return (ptr);
+}
+
+static int verif(char **buff, char **tab, char **line)
+{
+	char *ptr;
+	int final;
+
+	*buff = join(*buff, *tab);
+	final = end_of_line(*buff);
+	if (final > -1)
+	{
+		*line = ft_strdup(*buff);
+		ptr = *buff;
+		*buff = ft_strdup(*buff + final + 1);
+		free(ptr);
+		return (1);
+	}
 	return (0);
+}
+
+int get_next_line(int const fd, char **line)
+{
+	static char *buff[256];
+	char *tmp;
+	int result;
+	int ret;
+
+	tmp = ft_strnew(BUFF_SIZE);
+	if (BUFF_SIZE <= 0 || fd < 0 || (ret = read(fd, tmp, 0)) < 0)
+		return (-1);
+	while ((ret = read(fd, tmp, BUFF_SIZE)) > 0)
+	{
+		result = verif(&buff[fd], &tmp, line);
+		free(tmp);
+		if (result == 1)
+			return (1);
+		tmp = ft_strnew(BUFF_SIZE);
+	}
+	if ((result = verif(&buff[fd], &tmp, line)))
+		return (1);
+	else if (ft_strlen(buff[fd]) > 0)
+	{
+		*line = ft_strdup(buff[fd]);
+		ft_strdel(&buff[fd]);
+		return (1);
+	}
+	return (result);
 }
